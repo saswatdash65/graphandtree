@@ -1,35 +1,48 @@
-cmake_minimum_required(VERSION 3.2)
-project(graphandtree VERSION 1.0)
+cmake_minimum_required(VERSION 3.29)
+project(graphandtree VERSION 1.1)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_SUPPRESS_REGENERATION true)
 
-file(GLOB_RECURSE GRAPHANDTREE_HEADERS "${PROJECT_SOURCE_DIR}/include/*.h")
-file(GLOB_RECURSE GRAPHANDTREE_SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
+include(GNUInstallDirs)
 
-add_library(${PROJECT_NAME} STATIC ${GRAPHANDTREE_HEADERS} ${GRAPHANDTREE_SOURCES})
+add_library(${PROJECT_NAME} INTERFACE)
+target_include_directories(${PROJECT_NAME} INTERFACE
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+	"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+	VERSION ${PROJECT_VERSION}
+	COMPATIBILITY SameMajorVersion
+)
+configure_package_config_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+	INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake
+)
 
-option(INSTALL_LIB "Installation can be made optional" ON)
+# installation
+install(
+	DIRECTORY include/
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
-if(INSTALL_LIB)
-    set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ${GRAPHANDTREE_HEADERS})
-    
-    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-        if(MSVC)
-            install(TARGETS ${PROJECT_NAME} 
-                    ARCHIVE DESTINATION lib
-                    LIBRARY DESTINATION bin
-                    PUBLIC_HEADER DESTINATION include)
-        endif()
-        if(MINGW)
-            install(TARGETS ${PROJECT_NAME} 
-                    ARCHIVE DESTINATION lib
-                    LIBRARY DESTINATION bin
-                    PUBLIC_HEADER DESTINATION include)
-        endif()
-    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-        install(TARGETS ${PROJECT_NAME} 
-                LIBRARY DESTINATION lib
-                PUBLIC_HEADER DESTINATION include)
-    endif()
-    
-endif()
+install(
+	TARGETS ${PROJECT_NAME}
+	EXPORT ${PROJECT_NAME}Targets
+)
+
+install(
+	EXPORT ${PROJECT_NAME}Targets
+	NAMESPACE ${PROJECT_NAME}::
+	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake
+)
+
+install_files(
+	${CMAKE_CURRENT_BINARY_DIR}/ "${PROJECT_NAME}Config.cmake" "${PROJECT_NAME}ConfigVersion.cmake"
+	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake
+)
