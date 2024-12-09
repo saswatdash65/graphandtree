@@ -48,5 +48,3 @@ Add this script to your CMakeLists.txt file
     target_link_libraries(${PROJECT_NAME} ./graphandtree/build/libgraphandtree)
     target_include_directories(${PROJECT_NAME} PUBLIC ./graphandtree/include)
     target_link_directories(${PROJECT_NAME} PUBLIC ./graphandtree/build)
-
-**Note:** This library is in development and not fully completed yet.
